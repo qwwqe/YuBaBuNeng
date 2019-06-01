@@ -1,0 +1,1 @@
+export 'chengyu_provider.dart';
