@@ -40,4 +40,20 @@ class ChengYu {
     easiness = row['easiness'];
     stage = row['stage'];
   }
+
+  bool isLearned() {
+    return stage == 2;
+  }
+
+  bool isLearning() {
+    return stage == 1;
+  }
+
+  bool isHidden() {
+    return stage == 0;
+  }
+
+  bool isNew() {
+    return !(isLearned() || isLearning() || isHidden());
+  }
 }
