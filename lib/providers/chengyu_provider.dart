@@ -22,7 +22,7 @@ class ChengYuProvider {
     return _database;
   }
 
-  Future<List<ChengYu>> getRandomChengYu(int amount) async {
+  Future<List<ChengYu>> getRandomChengYu(int amount, {String like}) async {
     var db = await getDatabase();
     var rows = await db.rawQuery(
         'SELECT * FROM entries ORDER BY RANDOM() LIMIT ?', [amount]
@@ -38,11 +38,21 @@ class ChengYuProvider {
     return chengYuList;
   }
 
-  Future<List<ChengYu>> getUnseenChengYu(int amount) async {
+  Future<List<ChengYu>> getUnseenChengYu(int amount, {String like}) async {
     var db = await getDatabase();
-    var rows = await db.rawQuery(
-        'SELECT * FROM entries WHERE id NOT IN (SELECT entryId FROM stats) ORDER BY RANDOM() LIMIT ?', [amount]
-    );
+    var rows;
+    if (like != null) {
+      // TODO: confirm this works. otherwise, maybe.. just.. sanitize the 'like' string...?
+      rows = await db.rawQuery(
+          'SELECT * FROM entries WHERE id NOT IN (SELECT entryId FROM stats) AND chengyu LIKE ? ORDER BY RANDOM() LIMIT ?',
+          [like, amount]
+      );
+    } else {
+      rows = await db.rawQuery(
+          'SELECT * FROM entries WHERE id NOT IN (SELECT entryId FROM stats) ORDER BY RANDOM() LIMIT ?',
+          [amount]
+      );
+    }
 
     var chengYuList = List<ChengYu>();
     for(int i = 0; i < rows.length; i++) {
@@ -54,7 +64,7 @@ class ChengYuProvider {
     return chengYuList;
   }
 
-  Future<List<ChengYu>> getLearningChengYu(int amount, {bool random = false}) async {
+  Future<List<ChengYu>> getLearningChengYu(int amount, {bool random = false, String like}) async {
     var db = await getDatabase();
     var rows;
     if(random) {
@@ -78,7 +88,7 @@ class ChengYuProvider {
     return chengYuList;
   }
 
-  Future<List<ChengYu>> getLearnedChengYu(int amount, {bool random = false}) async {
+  Future<List<ChengYu>> getLearnedChengYu(int amount, {bool random = false, String like}) async {
     var db = await getDatabase();
     var rows;
     if(random) {

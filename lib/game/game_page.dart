@@ -35,25 +35,61 @@ class _GamePageState extends State<GamePage> {
       appBar: AppBar(
         title: Text(widget.gameType),
       ),
-      body: BlocBuilder(
-        bloc: gameBloc,
-        builder: (context, state) {
-          if(state is GameLoading) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+      body: BlocListener(
+          bloc: gameBloc,
+          listener: (context, state) {
+            if (state is GameLoadingFailed) {
+              Scaffold.of(context)
+                  .showSnackBar(SnackBar(content: Text("Failed loading game")));
+            }
+          },
+          child: BlocBuilder(
+              bloc: gameBloc,
+              builder: (context, state) {
+                if(state is GameLoading) {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
 
-          if(state is GameFinished) {
-            return Text("DONE");
-          }
+                if(state is GameLoadingFailed) {
+                  return Center(
+                    child: Icon(Icons.error),
+                  );
+                }
 
-          // TODO: grid
-        }
+                if(state is GameFinished) {
+                  return Text("DONE");
+                }
+
+                // TODO: grid
+                var rows = List<Row>();
+                var tileGrid = game.getTileGrid();
+                tileGrid.forEach((tileRow) {
+                  rows.add(Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: tileRow.map((tile) {
+                      return Container(
+                          child: Center(
+                            child: Text(tile.value == "" ? " " : tile.value,
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: tile.fixed ? Colors.red : Colors.black54,
+                              ),
+                            ),
+                          ),
+                          color: tile.playable ? Colors.lightBlueAccent : Colors.white70,
+                      );
+                    }).toList(),
+                  ));
+                });
+
+                return Column(
+                  children: rows,
+                );
+              }
+          ),
       ),
-//      Center(
-//          child: Text(widget.gameType)
-//      ),
     );
   }
 }

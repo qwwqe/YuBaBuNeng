@@ -11,6 +11,11 @@ class GameLoading extends GameState {
   String toString() => "GameLoading";
 }
 
+class GameLoadingFailed extends GameState {
+  @override
+  String toString() => "GameLoadingFailed";
+}
+
 class GameRunning extends GameState {
   @override
   String toString() => "GameRunning";

@@ -9,20 +9,20 @@ class ChengYuRepository {
     chengYuProvider = ChengYuProvider();
   }
   
-  Future<List<ChengYu>> getRandomChengYu(int amount) async {
-    return chengYuProvider.getRandomChengYu(amount);
+  Future<List<ChengYu>> getRandomChengYu(int amount, {String like}) async {
+    return chengYuProvider.getRandomChengYu(amount, like: like);
   }
 
-  Future<List<ChengYu>> getUnseenChengYu(int amount) async {
-    return chengYuProvider.getUnseenChengYu(amount);
+  Future<List<ChengYu>> getUnseenChengYu(int amount, {String like}) async {
+    return chengYuProvider.getUnseenChengYu(amount, like: like);
   }
 
-  Future<List<ChengYu>> getLearningChengYu(int amount, {bool random = false}) async {
-    return chengYuProvider.getLearningChengYu(amount, random: random);
+  Future<List<ChengYu>> getLearningChengYu(int amount, {bool random = false, String like}) async {
+    return chengYuProvider.getLearningChengYu(amount, random: random, like: like);
   }
 
-  Future<List<ChengYu>> getLearnedChengYu(int amount, {bool random = false}) async {
-    return chengYuProvider.getLearnedChengYu(amount, random: random);
+  Future<List<ChengYu>> getLearnedChengYu(int amount, {bool random = false, String like}) async {
+    return chengYuProvider.getLearnedChengYu(amount, random: random, like: like);
   }
 
   void saveChengYu(List<ChengYu> chengYu) async {
