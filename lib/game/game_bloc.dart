@@ -18,6 +18,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
   @override
   Stream<GameState> mapEventToState(GameEvent event) async* {
+
     if(event is LoadGame) {
       yield GameLoading();
 
@@ -84,7 +85,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
     if(event is SelectTileFromRack) {
       game.selectedRackTile = event.i;
-      yield TileSelectedFromRack();
+      yield TileSelectedFromRack(i: event.i);
     }
 
     if(event is PlaceTileOnBoard) {

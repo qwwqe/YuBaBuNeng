@@ -5,10 +5,10 @@ const int Vertical = 1;
 const int Horizontal = 2;
 
 class Game {
-  int size = 12;
+  int size = 11;
   List<ChengYu> chengYuList;
   List<Slot> slots;
-  List<String> usableChars;
+  List<String> _usableChars;
 
   List<ChengYu> borderChengYu;
   ChengYu leftPivotChengYu;
@@ -18,7 +18,7 @@ class Game {
 
   List<List<Map<Slot, int>>> grid;
 
-  int selectedRackTile;
+  int selectedRackTile = -1;
 
   //Game(
   //Game(this.chengYuList) : assert(chengYuList.length == 13);
@@ -47,10 +47,10 @@ class Game {
     }
 
     // compile full character list
-    usableChars = List<String>();
+    _usableChars = List<String>();
     chengYuList.forEach((chengYu) {
       for(int i = 0; i < chengYu.chengYu.length; i++) {
-        usableChars.add(chengYu.chengYu[i]);
+        _usableChars.add(chengYu.chengYu[i]);
       }
     });
     
@@ -59,6 +59,9 @@ class Game {
     _removeUsableChar(leftCrossChengYu[0].chengYu[1]);
     _removeUsableChar(rightPivotChengYu.chengYu[1]);
     _removeUsableChar(rightCrossChengYu[0].chengYu[1]);
+
+    // randomize
+    _usableChars.sort((a, b) => Random().nextBool() ? 1 : -1);
 
     // generate slots
     slots = List<Slot>();
@@ -72,16 +75,16 @@ class Game {
     // populate border
     _placeSlot(slots[0], 0, 1, Vertical);
     _placeSlot(slots[1], 0, 6, Vertical);
-    _placeSlot(slots[2], 11, 1, Vertical);
-    _placeSlot(slots[3], 11, 6, Vertical);
+    _placeSlot(slots[2], 10, 1, Vertical);
+    _placeSlot(slots[3], 10, 6, Vertical);
 
     _placeSlot(slots[4], 1, 0, Horizontal);
     _placeSlot(slots[5], 6, 0, Horizontal);
-    _placeSlot(slots[6], 1, 11, Horizontal);
-    _placeSlot(slots[7], 6, 11, Horizontal);
+    _placeSlot(slots[6], 1, 10, Horizontal);
+    _placeSlot(slots[7], 6, 10, Horizontal);
 
     // populate left pivot
-    _placeSlot(slots[8], 0, 7, Horizontal);
+    _placeSlot(slots[8], 1, 5, Horizontal);
     _placeSlot(slots[9], 3, 3, Vertical);
     _placeSlot(slots[10], 3, 3, Horizontal);
 
@@ -116,11 +119,11 @@ class Game {
   }
 
   void _removeUsableChar(String c) {
-    usableChars.remove(c);
+    _usableChars.remove(c);
   }
 
   void _replaceUsableChar(String c) {
-    usableChars.add(c);
+    _usableChars.add(c);
   }
 
   /// Attempts to place a tile at (x, y).
@@ -175,7 +178,7 @@ class Game {
   }
 
   List<String> getTileRack() {
-    return usableChars;
+    return _usableChars;
   }
 
   bool isComplete() {

@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:yu_ba_bu_neng/repositories/repositories.dart';
 import 'game.dart';
 import 'package:yu_ba_bu_neng/models/models.dart';
+import 'package:flutter/services.dart';
 
 class GamePage extends StatefulWidget {
   final ChengYuRepository chengYuRepository;
@@ -31,10 +32,11 @@ class _GamePageState extends State<GamePage> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIOverlays([]);
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.gameType),
-      ),
+      //appBar: AppBar(
+      //  title: Text(widget.gameType),
+      //),
       body: BlocListener(
           bloc: gameBloc,
           listener: (context, state) {
@@ -62,30 +64,153 @@ class _GamePageState extends State<GamePage> {
                   return Text("DONE");
                 }
 
-                // TODO: grid
-                var rows = List<Row>();
+                var boardRows = List<Row>();
                 var tileGrid = game.getTileGrid();
-                tileGrid.forEach((tileRow) {
-                  rows.add(Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: tileRow.map((tile) {
-                      return Container(
-                          child: Center(
-                            child: Text(tile.value == "" ? " " : tile.value,
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: tile.fixed ? Colors.red : Colors.black54,
+                for(int y = 0; y < tileGrid.length; y++) {
+                  List<Expanded> gridTiles = List<Expanded>();
+                  for(int x = 0; x < tileGrid[0].length; x++) {
+                    var tileText;
+                    var tileTextColor;
+                    var tileColor;
+
+                    var tile = tileGrid[y][x];
+
+                    if(tile.fixed) {
+                      tileText = tile.value;
+                      tileTextColor = Colors.cyan[100];
+                      tileColor = tile.playable ? Colors.black : Colors.white70;
+                    } else if(tile.value != "") {
+                      tileText = tile.value;
+                      tileTextColor = Colors.white;
+                      tileColor = tile.playable ? Colors.black : Colors.white70;
+                    } else {
+                      tileText = "空";
+                      tileTextColor = Colors.transparent;
+                      tileColor = tile.playable ? Colors.black : Colors.white70;
+                    }
+
+                    var e = Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            if(game.selectedRackTile > 0) {
+                              gameBloc.dispatch(PlaceTileOnBoard(x: x, y: y));
+                            }
+                          },
+                          child: Container(
+                            margin: EdgeInsets.all(1),
+                            child: Center(
+                              child: Text(tileText,
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  color: tileTextColor,
+                                ),
                               ),
                             ),
+                            color: tileColor,
                           ),
-                          color: tile.playable ? Colors.lightBlueAccent : Colors.white70,
-                      );
-                    }).toList(),
-                  ));
-                });
+                        ),
+                    );
 
-                return Column(
-                  children: rows,
+                    gridTiles.add(e);
+                  }
+
+                  boardRows.add(Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    textBaseline: TextBaseline.ideographic,
+                    children: gridTiles,
+                  ));
+                }
+//
+//                tileGrid.forEach((tileRow) {
+//                  boardRows.add(Row(
+//                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//                    textBaseline: TextBaseline.ideographic,
+//                    children: tileRow.map((tile) {
+//                      return GestureDetector(
+//                        onTap: () {
+//                          if(game.selectedRackTile > 0) {
+//                            game.placeTile();
+//                          }
+//                        },
+//                        child: Expanded(
+//                          child: Container(
+//                            margin: EdgeInsets.all(1),
+//                            child: Center(
+//                              child: Text(tile.value == "" ? "空" : tile.value,
+//                                style: TextStyle(
+//                                  fontSize: 22,
+//                                  color: tile.value == "" ? Colors.transparent : (tile.fixed ? Colors.white : Colors.black54),
+//                                ),
+//                              ),
+//                            ),
+//                            color: tile.playable ? Colors.black : Colors.white70,
+//                          ),
+//                        ),
+//                      );
+//                    }).toList(),
+//                  ));
+//                });
+
+
+                List<String> tileStrings = game.getTileRack();
+                List<GestureDetector> tiles = List<GestureDetector>();
+                for(int i = 0; i < tileStrings.length; i++) {
+                  var textColor;
+                  var bgColor;
+                  var borderColor;
+                  if (tileStrings[i] == "") {
+                    textColor = bgColor = borderColor = Colors.transparent;
+                  } else if (i == game.selectedRackTile) {
+                    textColor = Colors.brown;
+                    bgColor = Colors.black;
+                    borderColor = Colors.black;
+                  } else {
+                    textColor = Colors.white;
+                    borderColor = Colors.black;
+                    bgColor = Colors.transparent;
+                  }
+                  
+                  tiles.add(GestureDetector(
+                    onTap: () => gameBloc.dispatch(SelectTileFromRack(i: i)),
+                    child: Container(
+                      padding: EdgeInsets.all(1),
+                      child: Text(tileStrings[i],
+                          style: TextStyle(
+                            fontSize: 24,
+                            color: textColor,
+                          )
+                      ),
+                      decoration: BoxDecoration(
+                          border: Border.all(
+                            color: borderColor,
+                            width: 1.5,
+                          ),
+                          color: bgColor,
+                      ),
+                    )
+                  ));
+                }
+                var tileRack = Wrap(
+                  children: tiles,
+                  spacing: 2,
+                  runSpacing: 2,
+                );
+
+                return Container(
+                  child: Column(
+                    children: [
+                      Container(
+                        child: Column(
+                          children: boardRows,
+                        ),
+                      ),
+                      Spacer(),
+                      tileRack,
+                      Spacer(),
+                    ],
+                  ),
+                  padding: EdgeInsets.all(5),
+                  color: Colors.brown,
                 );
               }
           ),
