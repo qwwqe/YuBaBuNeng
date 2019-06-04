@@ -13,8 +13,8 @@ class ChengYuRepository {
     return chengYuProvider.getRandomChengYu(amount, like: like);
   }
 
-  Future<List<ChengYu>> getUnseenChengYu(int amount, {String like}) async {
-    return chengYuProvider.getUnseenChengYu(amount, like: like);
+  Future<List<ChengYu>> getUnseenChengYu(int amount, {String like, String unlike}) async {
+    return chengYuProvider.getUnseenChengYu(amount, like: like, unlike: unlike);
   }
 
   Future<List<ChengYu>> getLearningChengYu(int amount, {bool random = false, String like}) async {

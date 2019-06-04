@@ -25,7 +25,7 @@ class ChengYuProvider {
   Future<List<ChengYu>> getRandomChengYu(int amount, {String like}) async {
     var db = await getDatabase();
     var rows = await db.rawQuery(
-        'SELECT * FROM entries ORDER BY RANDOM() LIMIT ?', [amount]
+        'SELECT * FROM entries WHERE LENGTH(chengyu) = 4 ORDER BY RANDOM() LIMIT ?', [amount]
     );
 
     var chengYuList = List<ChengYu>();
@@ -38,18 +38,18 @@ class ChengYuProvider {
     return chengYuList;
   }
 
-  Future<List<ChengYu>> getUnseenChengYu(int amount, {String like}) async {
+  Future<List<ChengYu>> getUnseenChengYu(int amount, {String like = "%", String unlike =""}) async {
     var db = await getDatabase();
     var rows;
-    if (like != null) {
+    if (like != null || unlike != null) {
       // TODO: confirm this works. otherwise, maybe.. just.. sanitize the 'like' string...?
       rows = await db.rawQuery(
-          'SELECT * FROM entries WHERE id NOT IN (SELECT entryId FROM stats) AND chengyu LIKE ? ORDER BY RANDOM() LIMIT ?',
+          'SELECT * FROM entries WHERE id NOT IN (SELECT entryId FROM stats) AND LENGTH(chengyu) = 4 AND chengyu LIKE ? ORDER BY RANDOM() LIMIT ?',
           [like, amount]
       );
     } else {
       rows = await db.rawQuery(
-          'SELECT * FROM entries WHERE id NOT IN (SELECT entryId FROM stats) ORDER BY RANDOM() LIMIT ?',
+          'SELECT * FROM entries WHERE id NOT IN (SELECT entryId FROM stats) AND LENGTH(chengyu) = 4 ORDER BY RANDOM() LIMIT ?',
           [amount]
       );
     }
@@ -69,11 +69,11 @@ class ChengYuProvider {
     var rows;
     if(random) {
       rows = await db.rawQuery(
-          'SELECT * FROM entries LEFT JOIN stats WHERE id = entryId AND stage = 1 ORDER BY RANDOM() LIMIT ?', [amount]
+          'SELECT * FROM entries LEFT JOIN stats WHERE id = entryId AND stage = 1 AND LENGTH(chengyu) = 4 ORDER BY RANDOM() LIMIT ?', [amount]
       );
     } else {
       rows = await db.rawQuery(
-          'SELECT * FROM entries LEFT JOIN stats WHERE id = entryId AND stage = 1 ORDER BY timeDue ASC LIMIT ?', [amount]
+          'SELECT * FROM entries LEFT JOIN stats WHERE id = entryId AND stage = 1 AND LENGTH(chengyu) = 4 ORDER BY timeDue ASC LIMIT ?', [amount]
       );
     }
 
@@ -93,11 +93,11 @@ class ChengYuProvider {
     var rows;
     if(random) {
       rows = await db.rawQuery(
-          'SELECT * FROM entries LEFT JOIN stats WHERE id = entryId AND stage = 2 ORDER BY RANDOM() LIMIT ?', [amount]
+          'SELECT * FROM entries LEFT JOIN stats WHERE id = entryId AND stage = 2 AND LENGTH(chengyu) = 4 ORDER BY RANDOM() LIMIT ?', [amount]
       );
     } else {
       rows = await db.rawQuery(
-          'SELECT * FROM entries LEFT JOIN stats WHERE id = entryId AND stage = 2 ORDER BY timeDue ASC LIMIT ?', [amount]
+          'SELECT * FROM entries LEFT JOIN stats WHERE id = entryId AND stage = 2 AND LENGTH(chengyu) = 4 ORDER BY timeDue ASC LIMIT ?', [amount]
       );
     }
 

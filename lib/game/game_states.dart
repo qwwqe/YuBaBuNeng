@@ -31,13 +31,30 @@ class TileSelectedFromRack extends GameState {
 }
 
 class TilePlacedOnBoard extends GameState {
+  final int x;
+  final int y;
+
+  TilePlacedOnBoard({this.x, this.y}) : super([x, y]);
+
   @override
   String toString() => "TilePlacedOnBoard";
 }
 
 class TileRemovedFromBoard extends GameState {
+  final int x;
+  final int y;
+
+  TileRemovedFromBoard({this. x, this.y}) : super([x, y]);
+
   @override
   String toString() => "TileRemovedFromBoard";
+}
+
+class TileRackShuffled extends GameState {
+  TileRackShuffled() : super([DateTime.now()]);
+
+  @override
+  String toString() => "TileRackShuffled";
 }
 
 class GameFinished extends GameState {

@@ -32,7 +32,7 @@ class Game {
     this.rightCrossChengYu = rightCrossChengYu;
   }
 
-  bool setupGame() {
+  bool setupGame({hard: false}) {
     // compile full chengyu list
     chengYuList = List<ChengYu>();
     chengYuList.addAll(borderChengYu);
@@ -56,12 +56,15 @@ class Game {
     
     // remove overlaps
     _removeUsableChar(leftPivotChengYu.chengYu[2]);
-    _removeUsableChar(leftCrossChengYu[0].chengYu[1]);
+    _removeUsableChar(leftCrossChengYu[0].chengYu[0]);
     _removeUsableChar(rightPivotChengYu.chengYu[1]);
-    _removeUsableChar(rightCrossChengYu[0].chengYu[1]);
+    _removeUsableChar(rightCrossChengYu[0].chengYu[3]);
+    print("Usable chars: ${_usableChars.length}");
+    print(_usableChars);
+    print(leftCrossChengYu[0].chengYu);
+    print(rightCrossChengYu[0].chengYu);
 
-    // randomize
-    _usableChars.sort((a, b) => Random().nextBool() ? 1 : -1);
+    _usableChars.shuffle();
 
     // generate slots
     slots = List<Slot>();
@@ -99,6 +102,26 @@ class Game {
       _removeUsableChar(slots[i].populateTile());
     }
 
+    if(!hard) {
+      for(int i = 8; i < slots.length; i++) {
+        int j = Random().nextInt(4);
+        if (slots[i].tiles[j].value == "") {
+          String c = slots[i].chengYu.chengYu[j];
+          int x = slots[i].coords[j]['x'];
+          int y = slots[i].coords[j]['y'];
+          print("j: $j, c: $c");
+          if(grid[y][x] != null) {
+            grid[y][x].forEach((slot, offset) {
+              slot.setTile(offset, c);
+              slot.tiles[offset].fixed = true;
+            });
+
+            _removeUsableChar(c);
+          }
+        }
+      }
+    }
+
     return true;
   }
 
@@ -109,6 +132,7 @@ class Game {
       }
 
       grid[y][x][slot] = i;
+      slot.coords.add({'x' : x, 'y': y});
 
       if (orientation == Vertical) {
         y++;
@@ -133,26 +157,94 @@ class Game {
     bool correct = false;
 
     if (grid[y][x] != null) {
+      var oldValue = "";
+      bool unshelveTile = false;
+      bool anyFixed = false;
+      Slot solvedSlot;
+
       grid[y][x].forEach((slot, offset) {
-        correct = slot.setTile(offset, value);
+        anyFixed = anyFixed || slot.canPlaceTile(offset);
+        if(slot.canPlaceTile(offset)) {
+          print("Can place");
+          oldValue = slot.getValueAt(offset);
+          unshelveTile = true;
+          correct = slot.setTile(offset, value);
+          if (slot.tiles[offset].solved) {
+            solvedSlot = solvedSlot ?? slot;
+          }
+        }
+
+        for(int i = 0; i < slot.tiles.length; i++) {
+          print("${slot.tiles[i].value}, ${slot.chengYu.chengYu[i]}");
+        }
       });
 
-      _removeUsableChar(value);
+      if(solvedSlot != null) {
+        print("BIG DIPPER!!");
+
+        solvedSlot.coords.forEach((coords) {
+          int x = coords['x'];
+          int y = coords['y'];
+          grid[y][x].forEach((slot, offset) {
+            print("${slot.chengYu.chengYu} (offset: $offset)");
+            slot.tiles[offset].solved = true;
+          });
+        });
+      }
+
+      if (oldValue != "") {
+        _replaceUsableChar(oldValue);
+      }
+
+      if (unshelveTile) {
+        selectedRackTile = -1;
+        _removeUsableChar(value);
+      }
     }
 
+    var completeCount = 0;
+    for (var slot in slots) {
+      if(slot.isComplete()) {
+        completeCount++;
+      }
+    }
+    print("Complete: $completeCount");
+
     return correct;
+  }
+
+  List<Map<String, int>> getCompletedFromCoords(int x, int y) {
+    if(grid[y][x] == null) {
+      return null;
+    }
+
+    var coordList = List<Map<String, int>>();
+    grid[y][x].forEach((slot, offset) {
+      if (slot.isComplete()) {
+        coordList.addAll(slot.coords);
+      }
+    });
+
+    return coordList;
   }
 
   void removeTile(int x, int y) {
     if (grid[y][x] != null) {
       String c = "";
+      bool anyFixed = false;
 
       grid[y][x].forEach((slot, offset) {
-        c = slot.getValueAt(offset);
-        slot.unSetTile(offset);
+        if(slot.canDeleteTile(offset)) {
+          c = slot.getValueAt(offset);
+          slot.unSetTile(offset);
+        } else {
+          anyFixed = true;
+        }
       });
 
-      _replaceUsableChar(c);
+      if(!anyFixed && c != "") {
+        _replaceUsableChar(c);
+      }
     }
   }
 
@@ -164,9 +256,9 @@ class Game {
         if(grid[i][j] != null) {
           var slot = grid[i][j].keys.toList()[0];
           var offset = grid[i][j][slot];
-          print("x: $j, y: $i, offset: $offset, chengyu: ${slot.chengYu.chengYu}");
+          //print("x: $j, y: $i, offset: $offset, chengyu: ${slot.chengYu.chengYu}");
           var tile = slot.getTileAt(offset);
-          displayTile = Tile(value: tile.value, fixed: tile.fixed);
+          displayTile = Tile(value: tile.value, fixed: tile.fixed, solved: tile.solved);
         } else {
           displayTile = Tile(playable: false);
         }
@@ -179,6 +271,10 @@ class Game {
 
   List<String> getTileRack() {
     return _usableChars;
+  }
+
+  void shuffleTileRack() {
+    _usableChars.shuffle();
   }
 
   bool isComplete() {
@@ -204,28 +300,39 @@ class Game {
 class Slot {
   ChengYu chengYu;
   List<Tile> tiles;
+  List<Map<String, int>> coords;
 
   Slot(ChengYu chengYu) {
     this.chengYu = chengYu;
     tiles = List.generate(4, (i) => Tile());
+    coords = List<Map<String, int>>();
   }
 
   String populateTile() {
-    tiles = List<Tile>();
-    for(int i = 0; i < chengYu.chengYu.length; i++) {
-      tiles.add(Tile());
-    }
     var i = Random().nextInt(chengYu.chengYu.length);
-    tiles[i].value = chengYu.chengYu[i];
-    tiles[i].fixed = true;
+    if(tiles[i].value == "") {
+      tiles[i].value = chengYu.chengYu[i];
+      tiles[i].fixed = true;
 
-    return chengYu.chengYu[i];
+      return chengYu.chengYu[i];
+    } else {
+      return "";
+    }
+  }
+
+  void _updateTileCompletionStatus() {
+    bool complete = isComplete();
+    for (int i = 0; i < tiles.length; i++) {
+      tiles[i].solved = tiles[i].solved || complete;
+    }
   }
 
   bool setTile(int offset, String value) {
     if(!tiles[offset].fixed) {
       tiles[offset].value = value;
     }
+
+    _updateTileCompletionStatus();
 
     return value == chengYu.chengYu[offset];
   }
@@ -234,6 +341,15 @@ class Slot {
     if(!tiles[offset].fixed) {
       tiles[offset].value = "";
     }
+    _updateTileCompletionStatus();
+  }
+
+  bool canPlaceTile(int offset) {
+    return !tiles[offset].fixed;
+  }
+
+  bool canDeleteTile(int offset) {
+    return !tiles[offset].fixed;
   }
 
   String getValueAt(int offset) {
@@ -241,7 +357,7 @@ class Slot {
   }
 
   Tile getTileAt(int offset) {
-    print("--> chengyu: ${chengYu.chengYu}, tiles: $tiles");
+    //print("--> chengyu: ${chengYu.chengYu}, tiles: $tiles");
     return tiles[offset];
   }
 
@@ -259,6 +375,7 @@ class Tile {
   String value;
   bool fixed;
   bool playable;
+  bool solved;
 
-  Tile({this.value = "", this.fixed = false, this.playable = true});
+  Tile({this.value = "", this.fixed = false, this.playable = true, this.solved = false});
 }

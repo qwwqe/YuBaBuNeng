@@ -61,7 +61,7 @@ class _GamePageState extends State<GamePage> {
                 }
 
                 if(state is GameFinished) {
-                  return Text("DONE");
+                  return Center(child: Text("DONE"));
                 }
 
                 var boardRows = List<Row>();
@@ -75,7 +75,11 @@ class _GamePageState extends State<GamePage> {
 
                     var tile = tileGrid[y][x];
 
-                    if(tile.fixed) {
+                    if(tile.solved) {
+                      tileText = tile.value;
+                      tileTextColor = Colors.white;
+                      tileColor = Colors.brown[300];
+                    } else if(tile.fixed) {
                       tileText = tile.value;
                       tileTextColor = Colors.cyan[100];
                       tileColor = tile.playable ? Colors.black : Colors.white70;
@@ -92,8 +96,64 @@ class _GamePageState extends State<GamePage> {
                     var e = Expanded(
                         child: GestureDetector(
                           onTap: () {
-                            if(game.selectedRackTile > 0) {
+                            if(tile.solved) {
+                              return;
+                            }
+
+                            if(game.selectedRackTile >= 0) {
+                              HapticFeedback.lightImpact();
+                              SystemSound.play(SystemSoundType.click);
                               gameBloc.dispatch(PlaceTileOnBoard(x: x, y: y));
+                            } else {
+                              HapticFeedback.lightImpact();
+                              SystemSound.play(SystemSoundType.click);
+                              gameBloc.dispatch(RemoveTileFromBoard(x: x, y: y));
+                            }
+                          },
+                          onLongPress: () {
+                            var chengYuList = game.getChengYuAtPosition(x, y);
+                            if (chengYuList.length > 0) {
+                              var chengYu = chengYuList[0];
+                              print(chengYu.chengYu);
+
+                              var modalContent = List<Widget>();
+                              modalContent.add(Text(tile.solved ? chengYu.chengYu : "定義",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                ),
+                                textAlign: TextAlign.center,
+                              ));
+
+                              if (tile.solved) {
+                                modalContent.add(Text(chengYu.zhuYin.replaceAll(RegExp(r'\s+'), ""),
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ));
+                              }
+
+                              var definition = chengYu.shiYi;
+                              if (!tile.solved) {
+                                definition = definition.replaceAll(chengYu.chengYu, "****");
+                                definition = definition.replaceAll(chengYu.chengYu.substring(0, 2), "**");
+                                definition = definition.replaceAll(chengYu.chengYu.substring(2, 4), "**");
+                              }
+                              modalContent.add(Text(definition,
+                                style: TextStyle(
+                                  fontSize: 20,
+                                ),
+                              ));
+
+                              showModalBottomSheet(
+                                  context: context,
+                                  builder: (context) => Container(
+                                      padding: EdgeInsets.all(4),
+                                      child: Column(
+                                        children: modalContent,
+                                      )
+                                  ),
+                              );
                             }
                           },
                           child: Container(
@@ -152,6 +212,7 @@ class _GamePageState extends State<GamePage> {
 //                });
 
 
+                print(game.selectedRackTile);
                 List<String> tileStrings = game.getTileRack();
                 List<GestureDetector> tiles = List<GestureDetector>();
                 for(int i = 0; i < tileStrings.length; i++) {
@@ -171,7 +232,11 @@ class _GamePageState extends State<GamePage> {
                   }
                   
                   tiles.add(GestureDetector(
-                    onTap: () => gameBloc.dispatch(SelectTileFromRack(i: i)),
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      SystemSound.play(SystemSoundType.click);
+                      gameBloc.dispatch(SelectTileFromRack(i: i));
+                    },
                     child: Container(
                       padding: EdgeInsets.all(1),
                       child: Text(tileStrings[i],
@@ -207,6 +272,13 @@ class _GamePageState extends State<GamePage> {
                       Spacer(),
                       tileRack,
                       Spacer(),
+                      IconButton(
+                        color: Colors.white70,
+                        padding: EdgeInsets.all(0),
+                        iconSize: 30,
+                        onPressed: () => gameBloc.dispatch(ShuffleTileRack()),
+                        icon: Icon(Icons.shuffle),
+                      ),
                     ],
                   ),
                   padding: EdgeInsets.all(5),

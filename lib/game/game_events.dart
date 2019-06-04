@@ -47,4 +47,12 @@ class RemoveTileFromBoard extends GameEvent {
       assert(x != null),
       assert(y != null),
       super([x, y]);
+
+  @override
+  String toString() => "RemoveTileFromBoard";
+}
+
+class ShuffleTileRack extends GameEvent {
+  @override
+  String toString() => "ShuffleTileRack";
 }
