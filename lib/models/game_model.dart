@@ -277,6 +277,10 @@ class Game {
     _usableChars.shuffle();
   }
 
+  void sortTileRack() {
+    _usableChars.sort();
+  }
+
   bool isComplete() {
     for(int i = 0; i < slots.length; i++) {
       if(!slots[i].isComplete()) {

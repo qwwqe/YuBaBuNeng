@@ -115,6 +115,12 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       yield TileRackShuffled();
     }
 
+    if(event is SortTileRack) {
+      game.selectedRackTile = -1;
+      game.sortTileRack();
+      yield TileRackSorted();
+    }
+
     if(event is PlaceTileOnBoard) {
       var tileRack = game.getTileRack();
       var correct = game.placeTile(event.x, event.y, tileRack[game.selectedRackTile]);
@@ -131,7 +137,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 //          c.incorrectGuess();
 //        }
 //      });
-      yield TilePlacedOnBoard(x: event.x, y: event.y);
+      yield TilePlacedOnBoard(x: event.x, y: event.y, c: event.c);
 
       if (game.isComplete()) {
         yield GameFinished();

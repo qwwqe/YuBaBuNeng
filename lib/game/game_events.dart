@@ -29,11 +29,13 @@ class SelectTileFromRack extends GameEvent {
 class PlaceTileOnBoard extends GameEvent {
   final int x;
   final int y;
+  final String c;
 
-  PlaceTileOnBoard({@required this.x, @required this.y}) :
+  PlaceTileOnBoard({@required this.x, @required this.y, @required this.c}) :
         assert(x != null),
         assert(y != null),
-        super([x, y]);
+        assert(c != null),
+        super([x, y, c]);
 
   @override
   String toString() => "PlaceTileOnBoard";
@@ -55,4 +57,9 @@ class RemoveTileFromBoard extends GameEvent {
 class ShuffleTileRack extends GameEvent {
   @override
   String toString() => "ShuffleTileRack";
+}
+
+class SortTileRack extends GameEvent {
+  @override
+  String toString() => "SortTileRack";
 }
