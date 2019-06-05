@@ -180,86 +180,58 @@ class _GamePageState extends State<GamePage> {
                     children: gridTiles,
                   ));
                 }
-//
-//                tileGrid.forEach((tileRow) {
-//                  boardRows.add(Row(
-//                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//                    textBaseline: TextBaseline.ideographic,
-//                    children: tileRow.map((tile) {
-//                      return GestureDetector(
-//                        onTap: () {
-//                          if(game.selectedRackTile > 0) {
-//                            game.placeTile();
-//                          }
-//                        },
-//                        child: Expanded(
-//                          child: Container(
-//                            margin: EdgeInsets.all(1),
-//                            child: Center(
-//                              child: Text(tile.value == "" ? "空" : tile.value,
-//                                style: TextStyle(
-//                                  fontSize: 22,
-//                                  color: tile.value == "" ? Colors.transparent : (tile.fixed ? Colors.white : Colors.black54),
-//                                ),
-//                              ),
-//                            ),
-//                            color: tile.playable ? Colors.black : Colors.white70,
-//                          ),
-//                        ),
-//                      );
-//                    }).toList(),
-//                  ));
-//                });
-
 
                 print(game.selectedRackTile);
-                List<String> tileStrings = game.getTileRack();
-                List<GestureDetector> tiles = List<GestureDetector>();
-                for(int i = 0; i < tileStrings.length; i++) {
-                  var textColor;
-                  var bgColor;
-                  var borderColor;
-                  if (tileStrings[i] == "") {
-                    textColor = bgColor = borderColor = Colors.transparent;
-                  } else if (i == game.selectedRackTile) {
-                    textColor = Colors.brown;
-                    bgColor = Colors.black;
-                    borderColor = Colors.black;
-                  } else {
-                    textColor = Colors.white;
-                    borderColor = Colors.black;
-                    bgColor = Colors.transparent;
-                  }
-                  
-                  tiles.add(GestureDetector(
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      SystemSound.play(SystemSoundType.click);
-                      gameBloc.dispatch(SelectTileFromRack(i: i));
-                    },
-                    child: Container(
-                      padding: EdgeInsets.all(1),
-                      child: Text(tileStrings[i],
-                          style: TextStyle(
-                            fontSize: 24,
-                            color: textColor,
-                          )
-                      ),
-                      decoration: BoxDecoration(
-                          border: Border.all(
-                            color: borderColor,
-                            width: 1.5,
-                          ),
-                          color: bgColor,
-                      ),
-                    )
-                  ));
-                }
-                var tileRack = Wrap(
-                  children: tiles,
-                  spacing: 2,
-                  runSpacing: 2,
-                );
+//                List<String> tileStrings = game.getTileRack();
+//                List<GestureDetector> tiles = List<GestureDetector>();
+//                for(int i = 0; i < tileStrings.length; i++) {
+//                  var textColor;
+//                  var bgColor;
+//                  var borderColor;
+//                  if (tileStrings[i] == "") {
+//                    textColor = bgColor = borderColor = Colors.transparent;
+//                  } else if (i == game.selectedRackTile) {
+//                    textColor = Colors.brown;
+//                    bgColor = Colors.black;
+//                    borderColor = Colors.black;
+//                  } else {
+//                    textColor = Colors.white;
+//                    borderColor = Colors.black;
+//                    bgColor = Colors.transparent;
+//                  }
+//
+//                  tiles.add(GestureDetector(
+//                    onTap: () {
+//                      HapticFeedback.lightImpact();
+//                      SystemSound.play(SystemSoundType.click);
+//                      //gameBloc.dispatch(SelectTileFromRack(i: i));
+//                      setState(() {
+//                        game.selectedRackTile = i;
+//                      });
+//                    },
+//                    child: Container(
+//                      padding: EdgeInsets.all(1),
+//                      child: Text(tileStrings[i],
+//                          style: TextStyle(
+//                            fontSize: 24,
+//                            color: textColor,
+//                          )
+//                      ),
+//                      decoration: BoxDecoration(
+//                          border: Border.all(
+//                            color: borderColor,
+//                            width: 1.5,
+//                          ),
+//                          color: bgColor,
+//                      ),
+//                    )
+//                  ));
+//                }
+//                var tileRack = Wrap(
+//                  children: tiles,
+//                  spacing: 2,
+//                  runSpacing: 2,
+//                );
 
                 return Container(
                   child: Column(
@@ -270,7 +242,7 @@ class _GamePageState extends State<GamePage> {
                         ),
                       ),
                       Spacer(),
-                      tileRack,
+                      TileRack(game: game),
                       Spacer(),
                       IconButton(
                         color: Colors.white70,
