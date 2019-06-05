@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:yu_ba_bu_neng/models/models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:audioplayer/audioplayer.dart';
+import 'package:path_provider/path_provider.dart';
 import 'game.dart';
+
+import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
 
 class Board extends StatefulWidget {
   final GameBloc gameBloc;
@@ -18,9 +24,25 @@ class _BoardState extends State<Board> {
   GameBloc get _gameBloc => widget.gameBloc;
   Game get _game => widget.game;
 
+  AudioPlayer audioPlayer;
+  AudioPlayerState audioPlayerState;
+  String mp3Uri;
+
   @override
   void initState() {
+    audioPlayer = AudioPlayer();
+    _load();
     super.initState();
+  }
+
+  // TODO: move this to main page
+  Future<Null> _load() async {
+    final ByteData data = await rootBundle.load('assets/audio/replace-01.mp3');
+    Directory tempDir = await getTemporaryDirectory();
+    File tempFile = File('${tempDir.path}/replace-01.mp3');
+    await tempFile.writeAsBytes(data.buffer.asUint8List(), flush: true);
+    mp3Uri = tempFile.uri.toString();
+    print('finished loading, uri=$mp3Uri');
   }
 
   @override
@@ -56,7 +78,7 @@ class _BoardState extends State<Board> {
 
         var e = Expanded(
           child: GestureDetector(
-            onTap: () {
+            onTap: () async {
               if(tile.solved) {
                 return;
               }
@@ -67,7 +89,8 @@ class _BoardState extends State<Board> {
                 _gameBloc.dispatch(PlaceTileOnBoard(x: x, y: y, c: tile.value));
               } else {
                 HapticFeedback.lightImpact();
-                SystemSound.play(SystemSoundType.click);
+                //SystemSound.play(SystemSoundType.click);
+                await audioPlayer.play(mp3Uri, isLocal: true);
                 _gameBloc.dispatch(RemoveTileFromBoard(x: x, y: y));
               }
             },
