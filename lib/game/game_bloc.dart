@@ -108,8 +108,8 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     }
 
     if(event is SelectTileFromRack) {
-      game.selectedRackTile = event.i;
-      yield TileSelectedFromRack(i: event.i);
+      game.selectedRackTile = game.selectedRackTile == event.i ? -1 : event.i;
+      yield TileSelectedFromRack(i: game.selectedRackTile);
     }
 
     if(event is ShuffleTileRack) {
@@ -131,14 +131,12 @@ class GameBloc extends Bloc<GameEvent, GameState> {
         List<Map<String, int>> completedCoords = game.getCompletedFromCoords(event.x, event.y);
       }
       var selectedChengYuList = game.getChengYuAtPosition(event.x, event.y);
+      print(selectedChengYuList.map((c) => c.chengYu).toList());
+      print("Placement correct? ${result.correct ? "Yes" : "No"}");
       // TODO: update stats
-//      selectedChengYuList.forEach((c) {
-//        if(correct) {
-//          c.correctGuess();
-//        } else {
-//          c.incorrectGuess();
-//        }
-//      });
+      selectedChengYuList.forEach((c) {
+        //c.recordGuess(result.correct);
+      });
       yield TilePlacedOnBoard(x: event.x, y: event.y, c: event.c, result: result);
 
       if (game.isComplete()) {
