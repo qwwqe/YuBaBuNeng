@@ -34,8 +34,9 @@ class TilePlacedOnBoard extends GameState {
   final int x;
   final int y;
   final String c;
+  final PlacementResult result;
 
-  TilePlacedOnBoard({this.x, this.y, this.c}) : super([x, y, c]);
+  TilePlacedOnBoard({this.x, this.y, this.c, this.result}) : super([x, y, c, result]);
 
   @override
   String toString() => "TilePlacedOnBoard";
@@ -63,6 +64,11 @@ class TileRackSorted extends GameState {
 
   @override
   String toString() => "TileRackSorted";
+}
+
+class RowCompleted extends GameState {
+  @override
+  String toString() => "RowCompleted";
 }
 
 class GameFinished extends GameState {

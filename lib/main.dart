@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bloc/bloc.dart';
 import 'package:yu_ba_bu_neng/game/game.dart';
 import 'package:yu_ba_bu_neng/repositories/repositories.dart';
+import 'package:yu_ba_bu_neng/constants/constants.dart';
 
 class PrintTransitionDelegate extends BlocDelegate {
   @override
@@ -13,14 +14,19 @@ class PrintTransitionDelegate extends BlocDelegate {
 void main() async {
   BlocSupervisor().delegate = PrintTransitionDelegate();
   var chengYuRepository = ChengYuRepository();
-  runApp(MainApp(chengYuRepository: chengYuRepository));
+
+  // TODO: consider wrapping this repo in a Sound object instead, since it's not accessed through a bloc anyway
+  var soundRepository = SoundRepository();
+  runApp(MainApp(chengYuRepository: chengYuRepository, soundRepository: soundRepository));
 }
 
 class MainApp extends StatefulWidget {
   final ChengYuRepository chengYuRepository;
+  final SoundRepository soundRepository;
 
-  MainApp({Key key, @required this.chengYuRepository}) :
+  MainApp({Key key, @required this.chengYuRepository, @required this.soundRepository}) :
       assert(chengYuRepository != null),
+      assert(soundRepository != null),
       super(key: key);
 
   @override
@@ -29,6 +35,7 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> {
   ChengYuRepository get _chengYuRepository => widget.chengYuRepository;
+  SoundRepository get _soundRepository => widget.soundRepository;
 
   @override
   Widget build(BuildContext context) => MaterialApp(
@@ -51,6 +58,7 @@ class _MainAppState extends State<MainApp> {
                       builder: (context) => GamePage(
                         gameType: CustomGameType,
                         chengYuRepository: _chengYuRepository,
+                        soundRepository: _soundRepository,
                       ),
                     ),
                   ),
@@ -66,6 +74,7 @@ class _MainAppState extends State<MainApp> {
                         builder: (context) => GamePage(
                           gameType: RandomGameType,
                           chengYuRepository: _chengYuRepository,
+                          soundRepository: _soundRepository,
                         ),
                       )
                   ),

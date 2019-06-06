@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:yu_ba_bu_neng/models/models.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:bloc/bloc.dart';
+import 'package:yu_ba_bu_neng/game/game.dart';
 
 class TileRack extends StatefulWidget {
   final Game game;
@@ -43,10 +46,10 @@ class _TileRackState extends State<TileRack> {
           onTap: () {
             HapticFeedback.lightImpact();
             SystemSound.play(SystemSoundType.click);
-            //gameBloc.dispatch(SelectTileFromRack(i: i));
-            setState(() {
-              _game.selectedRackTile = i;
-            });
+            BlocProvider.of<GameBloc>(context).dispatch(SelectTileFromRack(i: i));
+//            setState(() {
+//              _game.selectedRackTile = i;
+//            });
           },
           child: Container(
             padding: EdgeInsets.all(1),

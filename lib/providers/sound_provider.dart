@@ -5,23 +5,18 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
+import 'package:yu_ba_bu_neng/constants/constants.dart';
 
 class SoundProvider {
   static List<int> numVariants = [1, 2, 3];
-  static const String COMPLETE_ROW = "completeRow";
-  static const String PLACE = "place";
-  static const String PICKUP = "pickup";
-  static const String REPLACE = "replace";
-  static const String SHUFFLE = "shuffle";
-  static const String SORT = "sort";
 
   Map<String, List<String>> soundFileNames = {
-    COMPLETE_ROW: numVariants.map((i) => 'complete_row-0$i.mp3'),
-    PLACE: numVariants.map((i) => 'place-0$i.mp3'),
-    PICKUP: numVariants.map((i) => 'pickup-0$i.mp3'),
-    REPLACE: numVariants.map((i) => 'replace-0$i.mp3'),
-    SHUFFLE: numVariants.map((i) => 'shuffle-0$i.mp3'),
-    SORT: numVariants.map((i) => 'sort-0$i.mp3'),
+    SOUND_COMPLETE_ROW: numVariants.map((i) => 'complete_row-0$i.mp3').toList(),
+    SOUND_PLACE: numVariants.map((i) => 'place-0$i.mp3').toList(),
+    SOUND_PICKUP: numVariants.map((i) => 'pickup-0$i.mp3').toList(),
+    SOUND_REPLACE: numVariants.map((i) => 'replace-0$i.mp3').toList(),
+    SOUND_SHUFFLE: numVariants.map((i) => 'shuffle-0$i.mp3').toList(),
+    SOUND_SORT: numVariants.map((i) => 'sort-0$i.mp3').toList(),
   };
   Map<String, List<String>> soundFileUris = Map<String, List<String>>();
 
@@ -51,35 +46,30 @@ class SoundProvider {
     return tempFile.uri.toString();
   }
 
-  void _play(String soundType) async {
+  void play(String soundType) async {
     if(!initialized) {
+      print("Skipping premature playback");
       return;
     }
-    await audioPlayer.play(soundFileUris[soundType][Random().nextInt(numVariants.length)], isLocal: true);
-  }
 
-  void playCompleteRow() {
-    _play(COMPLETE_ROW);
-  }
+    if(!soundFileUris.containsKey(soundType)) {
+      print("Nonexistent sound type: $soundType");
+      return;
+    }
 
-  void playPickup() {
-    _play(PICKUP);
-  }
+    int audioIndex = Random().nextInt(soundFileUris[soundType].length);
+    String audioUri = soundFileUris[soundType][audioIndex];
+    print("Playing $audioUri");
 
-  void playPlace() {
-    _play(PLACE);
-  }
+    if(audioPlayer.state == AudioPlayerState.PLAYING) {
+      await audioPlayer.stop();
+    }
 
-  void playReplace() {
-    _play(REPLACE);
-  }
+    if(audioPlayer.state == AudioPlayerState.COMPLETED) {
+      //audioPlayer.onPlayerStateChanged.
+    }
 
-  void playShuffle() {
-    _play(SHUFFLE);
-  }
-
-  void playSort() {
-    _play(SORT);
+    await audioPlayer.play(audioUri, isLocal: true);
   }
 
   void stopAll() {

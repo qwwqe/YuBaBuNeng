@@ -4,15 +4,18 @@ import 'dart:math';
 import 'package:meta/meta.dart';
 import 'package:yu_ba_bu_neng/models/models.dart';
 import 'package:yu_ba_bu_neng/repositories/repositories.dart';
+import 'package:yu_ba_bu_neng/constants/constants.dart';
 
 const int SETUP_RETRY_ATTEMPTS = 5;
 
 class GameBloc extends Bloc<GameEvent, GameState> {
   final ChengYuRepository chengYuRepository;
+  final SoundRepository soundRepository;
   final Game game;
 
-  GameBloc({@required this.chengYuRepository, @required this.game}) :
+  GameBloc({@required this.chengYuRepository, @required this.soundRepository, @required this.game}) :
       assert(chengYuRepository != null),
+      assert(soundRepository != null),
       assert(game != null);
 
   @override
@@ -123,10 +126,9 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
     if(event is PlaceTileOnBoard) {
       var tileRack = game.getTileRack();
-      var correct = game.placeTile(event.x, event.y, tileRack[game.selectedRackTile]);
-      if(correct) {
+      var result = game.placeTile(event.x, event.y, tileRack[game.selectedRackTile]);
+      if(result.correct) {
         List<Map<String, int>> completedCoords = game.getCompletedFromCoords(event.x, event.y);
-
       }
       var selectedChengYuList = game.getChengYuAtPosition(event.x, event.y);
       // TODO: update stats
@@ -137,7 +139,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 //          c.incorrectGuess();
 //        }
 //      });
-      yield TilePlacedOnBoard(x: event.x, y: event.y, c: event.c);
+      yield TilePlacedOnBoard(x: event.x, y: event.y, c: event.c, result: result);
 
       if (game.isComplete()) {
         yield GameFinished();
@@ -145,8 +147,10 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     }
 
     if(event is RemoveTileFromBoard) {
-      game.removeTile(event.x, event.y);
-      yield TileRemovedFromBoard(x: event.x, y: event.y);
+      var result = game.removeTile(event.x, event.y);
+      if (result) {
+        yield TileRemovedFromBoard(x: event.x, y: event.y);
+      }
     }
   }
 }

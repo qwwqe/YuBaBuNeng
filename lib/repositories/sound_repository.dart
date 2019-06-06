@@ -8,28 +8,8 @@ class SoundRepository {
     soundProvider.init();
   }
 
-  void playCompleteRow() {
-    soundProvider.playCompleteRow();
-  }
-
-  void playPickup() {
-    soundProvider.playPickup();
-  }
-
-  void playPlace() {
-    soundProvider.playPlace();
-  }
-
-  void playReplace() {
-    soundProvider.playReplace();
-  }
-
-  void playShuffle() {
-    soundProvider.playShuffle();
-  }
-
-  void playSort() {
-    soundProvider.playSort();
+  void play(String soundType) {
+    soundProvider.play(soundType);
   }
 
   void stopAll() {
