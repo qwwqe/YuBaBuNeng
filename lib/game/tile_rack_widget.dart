@@ -45,7 +45,6 @@ class _TileRackState extends State<TileRack> {
       tiles.add(GestureDetector(
           onTap: () {
             HapticFeedback.lightImpact();
-            SystemSound.play(SystemSoundType.click);
             BlocProvider.of<GameBloc>(context).dispatch(SelectTileFromRack(i: i));
 //            setState(() {
 //              _game.selectedRackTile = i;
