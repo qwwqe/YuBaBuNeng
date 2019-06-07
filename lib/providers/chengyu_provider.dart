@@ -102,17 +102,26 @@ class ChengYuProvider {
           'SELECT * FROM entries LEFT JOIN stats WHERE id = entryId AND stage = 2 AND LENGTH(chengyu) = 4 AND timeDue <= ? ORDER BY timeDue ASC LIMIT ?',
           [nowTime, amount]
       );
+      print(rows);
+      print(amount);
 
       if(rows.length < amount) {
           List<Map<String, dynamic>> extraRows;
           extraRows = await db.rawQuery(
-              'SELECT * FROM entries LEFT JOIN stats WHERE id = entryId AND stage = 2 AND LENGTH(chengyu) = 4 AND timeDue > ? LIMIT ?',
+              'SELECT * FROM entries LEFT JOIN stats WHERE id = entryId AND stage = 2 AND LENGTH(chengyu) = 4 AND timeDue > ? ORDER BY RANDOM() LIMIT ?',
               [nowTime, amount - rows.length]
           );
+          print(extraRows);
+          print(extraRows.length);
 
-          rows.addAll(extraRows);
+          var finalRows = List<Map<String, dynamic>>();
+          finalRows.addAll(rows);
+          finalRows.addAll(extraRows);
+          rows = finalRows;
       }
     }
+
+    print(rows.length);
 
     var chengYuList = List<ChengYu>();
     for(int i = 0; i < rows.length; i++) {
