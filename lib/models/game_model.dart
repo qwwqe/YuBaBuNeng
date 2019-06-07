@@ -151,15 +151,13 @@ class Game {
   }
 
   /// Attempts to place a tile at (x, y).
-  /// Returns true if the tile matches the corresponding offset in the chengyu,
-  /// false if it does not match, or if no chengyu/slot exists here.
   PlacementResult placeTile(int x, int y, String value) {
+    bool unshelveTile = false;
     bool correct = false;
     Slot solvedSlot;
 
     if (grid[y][x] != null) {
       var oldValue = "";
-      bool unshelveTile = false;
       bool anyFixed = false;
 
       grid[y][x].forEach((slot, offset) {
@@ -210,7 +208,7 @@ class Game {
     }
     print("Complete: $completeCount");
 
-    return PlacementResult(correct: correct, solved: solvedSlot != null);
+    return PlacementResult(correct: correct, solved: solvedSlot != null, placed: unshelveTile);
   }
 
   List<Map<String, int>> getCompletedFromCoords(int x, int y) {
@@ -392,6 +390,7 @@ class Tile {
 class PlacementResult {
   bool correct;
   bool solved;
+  bool placed;
 
-  PlacementResult({this.correct, this.solved});
+  PlacementResult({this.correct, this.solved, this.placed});
 }

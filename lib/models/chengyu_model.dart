@@ -1,9 +1,9 @@
 class ChengYu {
   static const int ACCEPTABLE_QUALITY = 3;
   static const double DEFAULT_EASINESS = 2.5;
-  static const int DEFAULT_LEARNING_INTERVAL = 600; // 10 minutes (in seconds)
-  static const int DEFAULT_LEARNED_INTERVAL = 345600; // 4 days (in seconds)
-  static const int GRADUATION_STEP = 5;
+  static const int DEFAULT_LEARNING_INTERVAL = 600000; // 10 minutes (in milliseconds)
+  static const int DEFAULT_LEARNED_INTERVAL = 345600000; // 4 days (in milliseconds)
+  static const int GRADUATION_STEP = 3;
 
   static const NEW_STAGE = 0;
   static const LEARNING_STAGE = 1;
@@ -52,7 +52,7 @@ class ChengYu {
     timeDue = row['timeDue'];
     steps = row['steps'];
     easiness = row['easiness'];
-    stage = row['stage'];
+    stage = row['stage'] ?? NEW_STAGE;
   }
 
   bool isLearned() {
@@ -111,6 +111,20 @@ class ChengYu {
   ///       2. Increment steps (bookkeeping only)
   ///       3. Set new_interval_length = (timeDue - timeStaged) * easiness
   void processSRS() {
+    // don't update stats on a card not yet due
+    if(timeDue != null && timeDue > DateTime.now().millisecondsSinceEpoch) {
+      return;
+    }
+
+    if(stage == null) {
+      stage = NEW_STAGE;
+    }
+
+    if(easiness == null) {
+      easiness = DEFAULT_EASINESS;
+    }
+
+
     int quality = 5 - incorrectGuesses;
     if (quality < 0) {
       quality = 0;
@@ -131,9 +145,8 @@ class ChengYu {
       stage = LEARNING_STAGE;
       steps = 0;
 
-      /// LEARNING_STAGE should ignore timeStaged and timeDue
-      //timeStaged = 0; // TODO: datetime.now()
-      //timeDue = timeStaged + DEFAULT_LEARNING_INTERVAL;
+      timeStaged = DateTime.now().millisecondsSinceEpoch;
+      timeDue = timeStaged + DEFAULT_LEARNING_INTERVAL;
     } else if (stage == LEARNING_STAGE) {
       if(quality >= ACCEPTABLE_QUALITY) {
         easiness = newEasiness;
@@ -141,8 +154,11 @@ class ChengYu {
         if (steps >= GRADUATION_STEP) {
           stage = LEARNED_STAGE;
           steps = 0;
-          timeStaged = 0; // TODO: datetime.now()
+          timeStaged = DateTime.now().millisecondsSinceEpoch;
           timeDue = timeStaged + DEFAULT_LEARNED_INTERVAL;
+        } else {
+          timeStaged = DateTime.now().millisecondsSinceEpoch;
+          timeDue = timeStaged + DEFAULT_LEARNING_INTERVAL;
         }
       } else {
         steps = 0;
@@ -151,7 +167,7 @@ class ChengYu {
       if(quality >= ACCEPTABLE_QUALITY) {
         easiness = newEasiness;
         steps++; // bookkeeping only
-        var now = 0; // TODO: datetime.now()
+        int now = DateTime.now().millisecondsSinceEpoch;
         timeDue = now + ((timeDue - timeStaged) * easiness).toInt();
         timeStaged = now;
       } else {
@@ -161,6 +177,12 @@ class ChengYu {
     } else {
       print("WARNING!!! GHOST STAGE!!!");
     }
+
+    print("Time staged: $timeStaged");
+  }
+
+  void hide() {
+    stage = HIDDEN_STAGE;
   }
 
   void _resetToLearning() {

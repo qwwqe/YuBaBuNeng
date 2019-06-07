@@ -28,4 +28,8 @@ class ChengYuRepository {
   void saveChengYu(List<ChengYu> chengYu) async {
     chengYuProvider.saveChengYu(chengYu);
   }
+
+  void saveStats(List<ChengYu> chengYu, {newCardLimit}) async {
+    chengYuProvider.saveStats(chengYu, newCardLimit: newCardLimit);
+  }
 }

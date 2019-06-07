@@ -135,11 +135,29 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       print("Placement correct? ${result.correct ? "Yes" : "No"}");
       // TODO: update stats
       selectedChengYuList.forEach((c) {
-        //c.recordGuess(result.correct);
+        if(result.placed) {
+          c.recordGuess(result.correct);
+        }
       });
       yield TilePlacedOnBoard(x: event.x, y: event.y, c: event.c, result: result);
 
       if (game.isComplete()) {
+        int newChengYuLimit = 1;
+        var recordedChengyu = List<ChengYu>();
+        for(int i = 0; i < game.chengYuList.length; i++) {
+          if(game.chengYuList[i].isNew()) {
+            if(newChengYuLimit <= 0) {
+              continue;
+            } else {
+              newChengYuLimit--;
+            }
+          }
+
+          game.chengYuList[i].processSRS();
+          recordedChengyu.add(game.chengYuList[i]);
+        }
+
+        chengYuRepository.saveStats(recordedChengyu);
         yield GameFinished();
       }
     }

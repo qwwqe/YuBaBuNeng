@@ -90,15 +90,28 @@ class ChengYuProvider {
 
   Future<List<ChengYu>> getLearnedChengYu(int amount, {bool random = false, String like}) async {
     var db = await getDatabase();
-    var rows;
+    List<Map<String, dynamic>> rows;
     if(random) {
       rows = await db.rawQuery(
           'SELECT * FROM entries LEFT JOIN stats WHERE id = entryId AND stage = 2 AND LENGTH(chengyu) = 4 ORDER BY RANDOM() LIMIT ?', [amount]
       );
     } else {
+      var nowTime = DateTime.now().millisecondsSinceEpoch;
+
       rows = await db.rawQuery(
-          'SELECT * FROM entries LEFT JOIN stats WHERE id = entryId AND stage = 2 AND LENGTH(chengyu) = 4 ORDER BY timeDue ASC LIMIT ?', [amount]
+          'SELECT * FROM entries LEFT JOIN stats WHERE id = entryId AND stage = 2 AND LENGTH(chengyu) = 4 AND timeDue <= ? ORDER BY timeDue ASC LIMIT ?',
+          [nowTime, amount]
       );
+
+      if(rows.length < amount) {
+          List<Map<String, dynamic>> extraRows;
+          extraRows = await db.rawQuery(
+              'SELECT * FROM entries LEFT JOIN stats WHERE id = entryId AND stage = 2 AND LENGTH(chengyu) = 4 AND timeDue > ? LIMIT ?',
+              [nowTime, amount - rows.length]
+          );
+
+          rows.addAll(extraRows);
+      }
     }
 
     var chengYuList = List<ChengYu>();
@@ -113,6 +126,19 @@ class ChengYuProvider {
   }
 
   void saveChengYu(List<ChengYu> chengYu) async {
+    // TODO: stub
     var db = await getDatabase();
+  }
+
+  void saveStats(List<ChengYu> chengYuList, {newCardLimit}) async {
+
+    var db = await getDatabase();
+    await db.transaction((tx) async {
+      chengYuList.forEach((c) async {
+        await tx.execute("INSERT OR REPLACE INTO stats (entryId, timeStaged, timeDue, steps, easiness, stage) VALUES (?, ?, ?, ?, ?, ?)",
+            [c.id, c.timeStaged, c.timeDue, c.steps, c.easiness, c.stage]);
+      });
+    });
+    ;
   }
 }
